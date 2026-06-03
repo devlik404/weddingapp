@@ -463,6 +463,54 @@ button {
   background: #eef5f5;
 }
 
+.cover-moving-florals {
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+}
+
+.cover-moving-flower {
+  position: absolute;
+  --cover-flower-base-rotate: 0deg;
+  width: 9.8rem;
+  height: 9.2rem;
+  opacity: 0.78;
+  filter: var(--floral-blue-filter) drop-shadow(0 12px 16px rgba(31, 39, 48, 0.12));
+  transform-origin: 50% 70%;
+  animation: cover-flower-wind 5.6s cubic-bezier(0.37, 0, 0.2, 1) infinite;
+  will-change: translate, rotate;
+}
+
+.cover-moving-flower-top-left {
+  left: -4.7rem;
+  top: -2.8rem;
+  --cover-flower-base-rotate: 180deg;
+}
+
+.cover-moving-flower-top-right {
+  right: -4.7rem;
+  top: -2.8rem;
+  --cover-flower-base-rotate: 180deg;
+  transform: scaleX(-1);
+  animation-name: cover-flower-wind-reverse;
+  animation-delay: 620ms;
+}
+
+.cover-moving-flower-bottom-left {
+  left: -4.9rem;
+  bottom: -3.5rem;
+  transform: scaleX(-1);
+  animation-name: cover-flower-wind-reverse;
+  animation-delay: 960ms;
+}
+
+.cover-moving-flower-bottom-right {
+  right: -4.9rem;
+  bottom: -3.5rem;
+  animation-delay: 420ms;
+}
+
 .cover-eyebrow {
   color: #253f53;
   font-size: 0.72rem;
@@ -498,36 +546,44 @@ button {
     0 8px 18px rgba(255, 255, 255, 0.72);
 }
 
-.cover-date {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #243f54;
-  font-size: 0.73rem;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  line-height: 1.35;
-  padding: 0.48rem 0.82rem;
-  border: 1px solid rgba(79, 105, 128, 0.22);
-  border-radius: 999px;
-  background: rgba(251, 250, 247, 0.72);
-  box-shadow: 0 10px 24px rgba(31, 39, 48, 0.08);
-  text-transform: uppercase;
-  backdrop-filter: blur(2px);
+.cover-guest-card {
+  display: grid;
+  width: min(100%, 20.5rem);
+  min-height: 4.35rem;
+  margin-inline: auto;
+  place-items: center;
+  border: 1px solid rgba(79, 105, 128, 0.18);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.82), transparent 58%),
+    rgba(251, 250, 247, 0.78);
+  padding: 0.75rem 1rem;
+  text-align: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 14px 28px rgba(31, 39, 48, 0.12);
+  backdrop-filter: blur(6px);
 }
 
-.cover-guest {
-  display: inline-flex;
-  color: rgba(31, 39, 48, 0.9);
-  font-size: 1.02rem;
+.cover-guest-label {
+  color: rgba(79, 105, 128, 0.66);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cover-guest-name {
+  width: 100%;
+  color: rgba(31, 39, 48, 0.92);
+  font-size: 1.24rem;
   font-style: italic;
-  font-weight: 600;
-  line-height: 1.35;
-  padding: 0.36rem 0.8rem;
-  border-radius: 999px;
-  background: rgba(251, 250, 247, 0.66);
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-align: center;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.76);
-  backdrop-filter: blur(2px);
 }
 
 .home-eyebrow {
@@ -2092,6 +2148,11 @@ button {
     border-color 180ms ease;
 }
 
+.floating-music-control,
+.floating-menu-control {
+  right: max(1.25rem, calc(50% - 196px));
+}
+
 .floating-control:hover {
   transform: translateY(-1px);
   border-color: rgba(238, 245, 245, 0.8);
@@ -2109,6 +2170,22 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
     0 12px 28px rgba(31, 39, 48, 0.22),
     0 0 0 4px rgba(238, 245, 245, 0.1);
+}
+
+.music-control-pause {
+  animation: music-pause-pulse 1.4s ease-in-out infinite;
+  filter: drop-shadow(0 1px 2px rgba(31, 39, 48, 0.36));
+}
+
+@keyframes music-pause-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.12);
+  }
 }
 
 .rsvp-flower {
@@ -2578,6 +2655,42 @@ button {
 
   to {
     transform: scale(1.035);
+  }
+}
+
+@keyframes cover-flower-wind {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: var(--cover-flower-base-rotate);
+  }
+
+  35% {
+    translate: 0.1rem -0.18rem;
+    rotate: calc(var(--cover-flower-base-rotate) + 1.8deg);
+  }
+
+  68% {
+    translate: -0.08rem 0.12rem;
+    rotate: calc(var(--cover-flower-base-rotate) - 1.15deg);
+  }
+}
+
+@keyframes cover-flower-wind-reverse {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: var(--cover-flower-base-rotate);
+  }
+
+  38% {
+    translate: -0.12rem -0.16rem;
+    rotate: calc(var(--cover-flower-base-rotate) - 1.6deg);
+  }
+
+  72% {
+    translate: 0.1rem 0.1rem;
+    rotate: calc(var(--cover-flower-base-rotate) + 1.05deg);
   }
 }
 

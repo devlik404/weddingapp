@@ -18,6 +18,7 @@ import {
   Menu,
   MessageCircle,
   Music2,
+  Pause,
   Send,
   Table2,
   Upload,
@@ -27,7 +28,7 @@ import {
 
 const eventDate = "Minggu, 02 Agustus 2026";
 const eventDateTarget = "2026-08-02T09:00:00+07:00";
-const eventLocation = "Jl. Inpres IV, RW.006, Kec. Larangan, Kota Tangerang";
+const eventLocation = "Jl. Panti Asuhan No.57, RT.003/RW.012, Jurang Manggu Tim., Kec. Pd. Aren, Kota Tangerang Selatan, Banten 15222";
 
 const events = [
   { title: "Akad Nikah", time: "09.00 - 10.00 WIB" },
@@ -54,6 +55,16 @@ const stories = [
     date: "Awal Kisah",
     title: "Awal Bertemu",
     body: "Tak ada yang terjadi secara kebetulan di dunia ini. Semua sudah tersusun rapi oleh Sang Maha Kuasa. Kita tidak bisa memilih kepada siapa hati akan jatuh cinta. Kisah pertemuan kami bermula ketika kami dikenalkan oleh kerabat terdekat. Awalnya kami hanya berniat menjalaninya saja, tetapi tanpa diduga pertemuan itu justru membawa kami ke dalam ikatan cinta yang suci."
+  },
+  {
+    date: "24 Mei 2026",
+    title: "Lamaran",
+    body: "Setelah beberapa bulan saling mengenal, atas kehendak-Nya ia datang membawa niat yang tulus bersama restu kedua orang tuanya. Hari itu menjadi saksi ketika dua hati menyatukan harapan dalam ridha keluarga dan bimbingan-Nya."
+  },
+  {
+    date: "2 Agustus 2026",
+    title: "Menikah",
+    body: "Akhirnya kami melangkah ke hari yang selama ini kami panjatkan dalam doa. Percayalah, bukan karena bertemu lalu berjodoh, melainkan karena berjodohlah maka kami dipertemukan. Karena keyakinan yang kuat bahwa cinta yang diridhai Allah SWT pasti akan menemukan jalannya, sebagaimana yang disampaikan oleh Sayyidina Ali bin Abi Thalib: \"Apa yang menjadi takdirmu akan menemukan jalannya untuk menemuimu.\""
   }
 ];
 
@@ -92,7 +103,7 @@ const guestMessages: GuestMessage[] = [
   {
     name: "Dimas",
     status: "Hadir",
-    message: "Turut berbahagia untuk Anggi Lusiana dan Muhamad Hamidudin. Semoga acaranya lancar sampai hari H."
+    message: "Turut berbahagia untuk Muhamad Hamidudin dan Anggi Lusiana. Semoga acaranya lancar sampai hari H."
   },
   {
     name: "Maya",
@@ -245,14 +256,14 @@ function escapeCalendarText(text: string) {
 }
 
 function downloadCalendarInvite() {
-  const title = "Pernikahan Anggi & Hamid";
+  const title = "Pernikahan Hamid & Anggi";
   const description =
     "Akad Nikah: 09.00 - 10.00 WIB\\nResepsi: 10.00 WIB - Selesai";
   const now = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
   const icsContent = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//Wedding Invitation//Anggi Hamid//ID",
+    "PRODID:-//Wedding Invitation//Hamid Anggi//ID",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
@@ -438,6 +449,27 @@ function CornerBucketSet() {
   );
 }
 
+function CoverMovingFlorals() {
+  const flowers = ["top-left", "top-right", "bottom-left", "bottom-right"];
+
+  return (
+    <div className="cover-moving-florals" aria-hidden="true">
+      {flowers.map((position) => (
+        <div key={position} className={`cover-moving-flower cover-moving-flower-${position}`}>
+          <Image
+            src="/images/luxury-blue-java-corner-blue-lavender.png"
+            alt=""
+            fill
+            priority
+            className="object-contain"
+            sizes="150px"
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function CoverInvitation({
   guestName,
   onOpen
@@ -457,6 +489,7 @@ function CoverInvitation({
         sizes="430px"
       />
       <div className="absolute inset-0 bg-white/18" />
+      <CoverMovingFlorals />
       <div className="java-label-frame absolute inset-x-8 top-[15%] bottom-[16%] z-10" />
 
       <div className="relative z-20 flex min-h-[88vh] w-full flex-col items-center justify-center">
@@ -501,21 +534,19 @@ function CoverInvitation({
           </div>
 
           <h1 className="cover-name mt-7 font-script">
-            Anggi
+            Hamid
           </h1>
           <p className="cover-amp my-4 font-display">&</p>
           <h2 className="cover-name font-script">
-           Hamid
+           Anggi
           </h2>
-          <p className="cover-date mt-6 font-body">
-            {eventDate}
-          </p>
         </div>
 
         <div className="mt-auto w-full pb-4">
-          <p className="cover-guest font-display">
-            Kepada Yth. {guestName}
-          </p>
+          <div className="cover-guest-card">
+            <p className="cover-guest-label font-body">Kepada Yth.</p>
+            <p className="cover-guest-name font-display">{guestName}</p>
+          </div>
           <button
             onClick={onOpen}
             className="mt-4 inline-flex items-center gap-2 rounded-full bg-[#4f6980] px-7 py-3 font-body text-[11px] font-bold uppercase tracking-[0.14em] text-white shadow-xl shadow-[#30475d]/25 transition hover:bg-[#34495b]"
@@ -576,7 +607,7 @@ function OpeningSection() {
 
         <div className="relative z-10 -mt-3">
           <h1 data-reveal="name" className="home-couple-name font-script">
-            Anggi
+            Hamid
           </h1>
           <div data-reveal="zoom" className="mx-auto my-1 flex w-44 items-center gap-3 text-white/88">
             <span className="h-px flex-1 bg-white/50" />
@@ -584,7 +615,7 @@ function OpeningSection() {
             <span className="h-px flex-1 bg-white/50" />
           </div>
           <h2 data-reveal="name" className="home-couple-name font-script">
-           Hamid
+           Anggi
           </h2>
           <p data-reveal="up" className="home-date mt-4 font-body">
             {eventDate}
@@ -655,21 +686,21 @@ function BrideGroomSection() {
         <CornerBucketSet />
 
         <h2 data-reveal="up" className="relative z-10 font-display text-[2.35rem] uppercase leading-tight tracking-[0.13em] text-[#4f6980]">
-          Bride & Groom
+          Groom & Bride
         </h2>
         <LuxuryDivider tone="blue" />
         <p data-reveal="up" className="relative z-10 mx-auto mt-4 max-w-[20rem] font-display text-lg italic leading-7 text-[#1f2730]/82">
-          Assalamualaikum Wr. Wb. Dengan memohon Rahmat & Ridho Allah SWT, kami
+          Assalamualaikum Wr. Wb. Dengan memohon Rahmat & Ridho Allah SWT SWT, kami
           bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara
-          pernikahan Muhamad Hamidudin-Anggi Lusiana kami:
+          pernikahan Muhamad Hamidudin dan Anggi Lusiana kami:
         </p>
 
         <div className="relative z-10 mt-7 space-y-5">
           <ProfileCard
-            image="/images/art-blue-java-bride.png"
-            name="Anggi Lusiana"
-            label="Mempelai Wanita"
-            role="Bpk.Roni Taufik (alm) & Ibu Warini"
+            image="/images/art-blue-java-groom.png"
+            name="Muhamad Hamidudin"
+            label="Mempelai Pria"
+            role="Bpk. Ujid Juhari & Ibu Ekoh "
           />
           <div data-reveal="zoom" className="mx-auto flex w-44 items-center gap-3 text-[#4f6980]">
             <span className="h-px flex-1 bg-[#4f6980]/45" />
@@ -677,10 +708,10 @@ function BrideGroomSection() {
             <span className="h-px flex-1 bg-[#4f6980]/45" />
           </div>
           <ProfileCard
-            image="/images/art-blue-java-groom.png"
-            name="Muhamad Hamidudin"
-            label="Mempelai Pria"
-            role="Bpk. Ujid Juhari & Ibu Ekoh "
+            image="/images/art-blue-java-bride.png"
+            name="Anggi Lusiana"
+            label="Mempelai Wanita"
+            role="Bpk.Roni Taufik (alm) & Ibu Warini"
           />
         </div>
       </div>
@@ -854,7 +885,7 @@ function EventSection() {
               </div>
               <div className="mt-5 text-[#4f6980]">
                 <p className="font-display text-2xl font-bold">
-                  Gedung Serbaguna
+                  Gedung Graha Praba Dakara
                 </p>
                 {/* <p className="mt-1 font-display text-lg leading-6">
                   {eventLocation}
@@ -877,7 +908,7 @@ function MapMock() {
   return (
     <div className="google-map-card relative mx-auto mt-7 h-64 overflow-hidden bg-[#d8e8ed] text-left shadow-inner ring-1 ring-[#4f6980]/20">
       <iframe
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.2155643745714!2d106.72406807541353!3d-6.235291461061298!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f0a7ad998203%3A0x3cb147c30e60f997!2sJl.%20Inpres%20IV%2C%20RW.006%2C%20Kec.%20Larangan%2C%20Kota%20Tangerang%2C%20Banten%2015154!5e0!3m2!1sid!2sid!4v1780025794216!5m2!1sid!2sid"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.0954179662513!2d106.72623437541364!3d-6.251156961207169!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f19dde55711d%3A0xed504e608f68c834!2sGraha%20Praba%20Dakara!5e0!3m2!1sid!2sid!4v1780392648524!5m2!1sid!2sid"
         title="Lokasi acara pernikahan"
         className="google-map-iframe h-full w-full border-0"
         allowFullScreen
@@ -886,7 +917,7 @@ function MapMock() {
       />
       <div className="google-map-search">
         <MapPin size={15} aria-hidden="true" />
-        <span>Gedung Serbaguna</span>
+        <span>Gedung Graha Praba Dakara</span>
       </div>
       <div className="google-map-controls" aria-hidden="true">
         <span>+</span>
@@ -897,7 +928,7 @@ function MapMock() {
           <MapPin size={18} aria-hidden="true" />
         </span>
         <span>
-          <strong>Gedung Serbaguna</strong>
+          <strong>Gedung Graha Praba Dakara</strong>
           <small>{eventLocation}</small>
         </span>
       </div>
@@ -906,8 +937,6 @@ function MapMock() {
 }
 
 function LoveStorySection() {
-  const story = stories[0];
-
   return (
     <section id="story" className="page-section love-story-section relative overflow-hidden px-5 py-10 text-white">
       <SectionFloralFrame />
@@ -922,44 +951,50 @@ function LoveStorySection() {
         </h2>
         <LuxuryDivider />
 
-        <article data-reveal="up" className="love-story-card relative mt-7 overflow-hidden p-4 text-[#1f2730]">
-          <div className="grid gap-4">
-            <div className="love-story-photo relative mx-auto overflow-hidden bg-white">
-              <Image
-                src="/images/anggi-hamid.jpeg"
-                alt={story.title}
-                fill
-                className="object-contain object-top"
-                sizes="280px"
-              />
-            </div>
+        <div className="mt-7 space-y-5">
+          {stories.map((story, index) => (
+            <article key={story.title} data-reveal="up" className="love-story-card relative overflow-hidden p-4 text-[#1f2730]">
+              <div className="grid gap-4">
+                {index === 0 ? (
+                  <div className="love-story-photo relative mx-auto overflow-hidden bg-white">
+                    <Image
+                      src="/images/anggi-hamid.jpeg"
+                      alt={story.title}
+                      fill
+                      className="object-contain object-top"
+                      sizes="280px"
+                    />
+                  </div>
+                ) : null}
 
-            <div className="relative px-2 pb-2 text-center">
-              <div className="mx-auto flex w-fit items-center gap-2 rounded-full bg-[#4f6980]/10 px-4 py-2 text-[#4f6980]">
-                <CalendarDays size={15} aria-hidden="true" />
-                <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em]">
-                  {story.date}
-                </span>
+                <div className="relative px-2 pb-2 text-center">
+                  <div className="mx-auto flex w-fit items-center gap-2 rounded-full bg-[#4f6980]/10 px-4 py-2 text-[#4f6980]">
+                    <CalendarDays size={15} aria-hidden="true" />
+                    <span className="font-body text-[10px] font-bold uppercase tracking-[0.18em]">
+                      {story.date}
+                    </span>
+                  </div>
+                  <h3 data-reveal="name" className="mt-4 font-script text-[3.5rem] leading-none text-[#3f5f77]">
+                    {story.title}
+                  </h3>
+                  <div className="mx-auto my-4 h-px w-40 bg-[#4f6980]/35" />
+                  <TypewriterParagraph
+                    text={story.body}
+                    className="mx-auto max-w-[18rem] text-left font-display text-[1.08rem] font-semibold leading-7 text-[#1f2730]/82"
+                    speed={40}
+                    startDelay={250}
+                  />
+                </div>
               </div>
-              <h3 data-reveal="name" className="mt-4 font-script text-[3.5rem] leading-none text-[#3f5f77]">
-                {story.title}
-              </h3>
-              <div className="mx-auto my-4 h-px w-40 bg-[#4f6980]/35" />
-              <TypewriterParagraph
-                text={story.body}
-                className="mx-auto max-w-[18rem] text-left font-display text-[1.08rem] font-semibold leading-7 text-[#1f2730]/82"
-                speed={40}
-                startDelay={250}
-              />
-            </div>
-          </div>
-        </article>
+            </article>
+          ))}
+        </div>
 
         <div data-reveal="zoom" className="love-story-strip mt-4 grid grid-cols-2 gap-3">
           <div className="relative h-28 overflow-hidden rounded-t-full rounded-b-xl border-2 border-white/75">
             <Image
               src="/images/anggi-hamid2.jpeg"
-              alt="Momen bersama Anggi dan Hamid"
+              alt="Momen bersama Hamid dan Anggi"
               fill
               className="object-contain object-top"
               sizes="160px"
@@ -1009,7 +1044,7 @@ function GallerySection() {
             />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#1f2730]/70 to-transparent px-4 pb-4 pt-16 text-left">
               <p className="font-body text-[10px] font-bold uppercase tracking-[0.22em] text-white/75">
-                Anggi & Hamid
+                Hamid & Anggi
               </p>
               {/* <p className="mt-1 font-display text-2xl italic text-white">
                 Cerita indah yang kami abadikan
@@ -1400,7 +1435,7 @@ function GiftSection({
         </head>
         <body>
           <h1>History Transfer Wedding Gift</h1>
-          <p>Anggi & Hamid</p>
+          <p>Hamid & Anggi</p>
           <div class="summary">
             <span>Total Transfer: ${giftTransferHistory.length}</span>
             <span>Total Nominal: ${escapeExportHtml(formatRupiah(giftTransferTotal))}</span>
@@ -2140,7 +2175,7 @@ function WeddingFooter() {
   return (
     <footer data-reveal="up" className="wedding-footer mt-5 text-center">
       <p className="font-script text-[2.15rem] leading-none text-white">
-        Anggi & Hamid
+        Hamid & Anggi
       </p>
       <p className="mt-2 font-body text-[10px] font-bold uppercase tracking-[0.22em] text-white/72">
         Terima kasih atas doa dan restunya
@@ -2323,13 +2358,17 @@ function MusicButton() {
       <button
         type="button"
         onClick={toggleMusic}
-        className={`floating-control fixed bottom-24 right-[calc(50%-205px)] z-30 ${
+        className={`floating-control floating-music-control fixed bottom-24 z-30 ${
           isPlaying ? "floating-control-active" : ""
         }`}
         aria-label={isPlaying ? "Jeda musik" : "Putar musik"}
         title={isPlaying ? "Jeda musik" : "Putar musik"}
       >
-        <Music2 size={20} aria-hidden="true" />
+        {isPlaying ? (
+          <Music2 size={20} aria-hidden="true" />
+        ) : (
+          <Pause className="music-control-pause" size={19} aria-hidden="true" />
+        )}
       </button>
     </>
   );
@@ -2354,7 +2393,7 @@ function BottomNav({
       <button
         type="button"
         onClick={() => setIsNavOpen((current) => !current)}
-        className="floating-control fixed bottom-10 right-[calc(50%-205px)] z-50"
+        className="floating-control floating-menu-control fixed bottom-10 z-50"
         aria-label={isNavOpen ? "Tutup menu" : "Buka menu"}
         aria-expanded={isNavOpen}
         title={isNavOpen ? "Tutup menu" : "Buka menu"}
