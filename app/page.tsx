@@ -29,6 +29,7 @@ import {
 const eventDate = "Minggu, 02 Agustus 2026";
 const eventDateTarget = "2026-08-02T09:00:00+07:00";
 const eventLocation = "Jl. Panti Asuhan No.57, RT.003/RW.012, Jurang Manggu Tim., Kec. Pd. Aren, Kota Tangerang Selatan, Banten 15222";
+const eventMapsUrl = "https://www.google.com/maps/place/Graha+Praba+Dakara/@-6.2511569,106.7262344,17z";
 
 const events = [
   { title: "Akad Nikah", time: "09.00 - 10.00 WIB" },
@@ -915,15 +916,17 @@ function MapMock() {
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
       />
-      <div className="google-map-search">
-        <MapPin size={15} aria-hidden="true" />
-        <span>Gedung Graha Praba Dakara</span>
-      </div>
       <div className="google-map-controls" aria-hidden="true">
         <span>+</span>
         <span>-</span>
       </div>
-      <div className="google-map-place">
+      <a
+        className="google-map-place"
+        href={eventMapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Buka alamat acara di Google Maps"
+      >
         <span className="google-map-pin">
           <MapPin size={18} aria-hidden="true" />
         </span>
@@ -931,7 +934,7 @@ function MapMock() {
           <strong>Gedung Graha Praba Dakara</strong>
           <small>{eventLocation}</small>
         </span>
-      </div>
+      </a>
     </div>
   );
 }
