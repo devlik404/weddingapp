@@ -7,18 +7,18 @@ import {
   CalendarDays,
   Camera,
   CheckCircle2,
+  Clock,
   Copy,
+  Disc3,
   FileText,
   Gift,
-  Heart,
   Home,
   Instagram,
   MailOpen,
   MapPin,
   Menu,
   MessageCircle,
-  Music2,
-  Pause,
+  Play,
   Send,
   Table2,
   Upload,
@@ -27,13 +27,13 @@ import {
 } from "lucide-react";
 
 const eventDate = "Minggu, 02 Agustus 2026";
-const eventDateTarget = "2026-08-02T09:00:00+07:00";
+const eventDateTarget = "2026-08-02T08:00:00+07:00";
 const eventLocation = "Jl. Panti Asuhan No.57, RT.003/RW.012, Jurang Manggu Tim., Kec. Pd. Aren, Kota Tangerang Selatan, Banten 15222";
 const eventMapsUrl = "https://www.google.com/maps/place/Graha+Praba+Dakara/@-6.2511569,106.7262344,17z";
 
 const events = [
-  { title: "Akad Nikah", time: "09.00 - 10.00 WIB" },
-  { title: "Resepsi", time: "10.00 WIB - Selesai" }
+  { title: "Akad Nikah", time: "08.00 - 09.00 WIB" },
+  { title: "Resepsi", time: "11.00 WIB - 14.00 WIB" }
 ];
 
 const bankAccounts = [
@@ -137,7 +137,6 @@ const navItems = [
   { id: "date", label: "Tanggal", icon: CalendarDays },
   { id: "event", label: "Acara", icon: MapPin },
   { id: "gallery", label: "Galeri", icon: Camera },
-  { id: "family", label: "Keluarga Besar", icon: UsersRound },
   { id: "gift", label: "Gift", icon: Gift },
   { id: "rsvp", label: "RSVP", icon: MessageCircle }
 ];
@@ -248,47 +247,23 @@ function TypewriterParagraph({
   );
 }
 
-function escapeCalendarText(text: string) {
-  return text
-    .replace(/\\/g, "\\\\")
-    .replace(/,/g, "\\,")
-    .replace(/;/g, "\\;")
-    .replace(/\n/g, "\\n");
-}
-
-function downloadCalendarInvite() {
+function openGoogleCalendarInvite() {
   const title = "Pernikahan Hamid & Anggi";
-  const description =
-    "Akad Nikah: 09.00 - 10.00 WIB\\nResepsi: 10.00 WIB - Selesai";
-  const now = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-  const icsContent = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Wedding Invitation//Hamid Anggi//ID",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
-    "BEGIN:VEVENT",
-    "UID:anggi-hamid-wedding-20260802@wedding-invitation",
-    `DTSTAMP:${now}`,
-    "DTSTART:20260802T020000Z",
-    "DTEND:20260802T100000Z",
-    `SUMMARY:${escapeCalendarText(title)}`,
-    `DESCRIPTION:${escapeCalendarText(description)}`,
-    `LOCATION:${escapeCalendarText(eventLocation)}`,
-    "END:VEVENT",
-    "END:VCALENDAR"
-  ].join("\r\n");
+  const details = [
+    "Dengan penuh cinta, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberi doa restu di hari bahagia kami.",
+    "",
+    "Akad Nikah: 08.00 - 09.00 WIB",
+    "Resepsi: 11.00 - 14.00 WIB"
+  ].join("\n");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: title,
+    dates: "20260802T010000Z/20260802T070000Z",
+    details,
+    location: eventLocation
+  });
 
-  const file = new Blob([icsContent], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(file);
-  const link = document.createElement("a");
-
-  link.href = url;
-  link.download = "pernikahan-anggi-hamid.ics";
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, "_blank", "noopener,noreferrer");
 }
 
 export default function HomePage() {
@@ -390,7 +365,6 @@ export default function HomePage() {
         <EventSection />
         <LoveStorySection />
         <GallerySection />
-        <FamilySection />
         <GiftSection
           guestName={guestName}
           giftExportSecret={giftExportSecret}
@@ -491,8 +465,6 @@ function CoverInvitation({
       />
       <div className="absolute inset-0 bg-white/18" />
       <CoverMovingFlorals />
-      <div className="java-label-frame absolute inset-x-8 top-[15%] bottom-[16%] z-10" />
-
       <div className="relative z-20 flex min-h-[88vh] w-full flex-col items-center justify-center">
         <div className="mt-auto">
           <p className="cover-eyebrow font-body">
@@ -502,7 +474,7 @@ function CoverInvitation({
           <div className="cover-photo-scene relative mx-auto mt-8">
             <div className="cover-photo-frame relative z-20 mx-auto overflow-hidden bg-white shadow-xl shadow-[#30475d]/25">
               <Image
-                src="/images/anggi-hamid.jpeg"
+                src="/images/preweding/DSC01334.jpg"
                 alt="Foto pasangan"
                 fill
                 priority
@@ -547,6 +519,9 @@ function CoverInvitation({
           <div className="cover-guest-card">
             <p className="cover-guest-label font-body">Kepada Yth.</p>
             <p className="cover-guest-name font-display">{guestName}</p>
+            <p className="cover-guest-note font-body">
+              *mohon maaf jika ada kesalahan dalam penulisan nama / gelar.
+            </p>
           </div>
           <button
             onClick={onOpen}
@@ -596,7 +571,7 @@ function OpeningSection() {
 
           <div className="home-couple-medallion absolute left-1/2 top-[6.2rem] h-40 w-32 -translate-x-1/2 overflow-hidden rounded-t-full rounded-b-[4rem] border-[3px] border-white/90 bg-white shadow-xl shadow-[#1f2730]/25">
             <Image
-              src="/images/anggi-hamid.jpeg"
+              src="/images/preweding/DSC01334.jpg"
               alt="Foto pasangan"
               fill
               priority
@@ -650,7 +625,7 @@ function VerseSection() {
       <div className="verse-card relative z-10 mx-auto w-full max-w-[22rem] px-6 py-8">
         <div data-reveal="zoom" className="verse-photo relative mx-auto overflow-hidden bg-white">
           <Image
-            src="/images/anggi-hamid2.jpeg"
+            src="/images/preweding/DSC01293.jpg"
             alt="Foto bersama pasangan"
             fill
             className="object-cover"
@@ -698,10 +673,11 @@ function BrideGroomSection() {
 
         <div className="relative z-10 mt-7 space-y-5">
           <ProfileCard
-            image="/images/art-blue-java-groom.png"
+            image="/images/preweding/DSC01393.jpg"
             name="Muhamad Hamidudin"
             label="Mempelai Pria"
             role="Bpk. Ujid Juhari & Ibu Ekoh "
+            instagram="@hamid.allbuchori_"
           />
           <div data-reveal="zoom" className="mx-auto flex w-44 items-center gap-3 text-[#4f6980]">
             <span className="h-px flex-1 bg-[#4f6980]/45" />
@@ -709,10 +685,11 @@ function BrideGroomSection() {
             <span className="h-px flex-1 bg-[#4f6980]/45" />
           </div>
           <ProfileCard
-            image="/images/art-blue-java-bride.png"
+            image="/images/preweding/DSC01410.jpg"
             name="Anggi Lusiana"
             label="Mempelai Wanita"
             role="Bpk.Roni Taufik (alm) & Ibu Warini"
+            instagram="@lusianaanggi"
           />
         </div>
       </div>
@@ -724,13 +701,17 @@ function ProfileCard({
   image,
   name,
   label,
-  role
+  role,
+  instagram
 }: {
   image: string;
   name: string;
   label: string;
   role: string;
+  instagram: string;
 }) {
+  const instagramUrl = `https://www.instagram.com/${instagram.replace("@", "")}`;
+
   return (
     <article data-reveal="up" className="relative overflow-hidden rounded-2xl border border-[#d8dee0] bg-white text-center shadow-xl shadow-[#30475d]/12">
       <div className="absolute inset-x-0 top-0 h-24 bg-[#4f6980]" />
@@ -756,16 +737,18 @@ function ProfileCard({
         <p className="mx-auto mt-3 max-w-[16rem] font-display text-lg font-semibold leading-6 text-[#1f2730]/82">
           {role}
         </p>
-        <div className="mx-auto mt-5 flex justify-center gap-3">
-          {["ig", "f", "tk", "yt"].map((item) => (
-            <span
-              key={item}
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-[#4f6980] font-body text-[11px] font-bold uppercase text-white shadow-md shadow-[#4f6980]/20"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
+        <a
+          href={instagramUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="profile-instagram-link mx-auto mt-5"
+          aria-label={`Buka Instagram ${name}`}
+        >
+          <span className="profile-instagram-icon">
+            <Instagram size={15} aria-hidden="true" />
+          </span>
+          <span>{instagram}</span>
+        </a>
       </div>
     </article>
   );
@@ -807,11 +790,13 @@ function SaveDateSection() {
           <button
             type="button"
             data-reveal="up"
-            onClick={downloadCalendarInvite}
-            className="mt-8 inline-flex items-center gap-3 rounded-full border border-white/70 bg-white px-7 py-3 font-body text-sm font-bold uppercase tracking-[0.08em] text-[#4f6980] shadow-xl shadow-[#24384c]/18 transition hover:bg-[#f4f8f8]"
+            onClick={openGoogleCalendarInvite}
+            className="save-calendar-button mt-8"
           >
-            <CalendarDays size={17} aria-hidden="true" />
-            Simpan di Kalender
+            <span className="save-calendar-icon">
+              <CalendarDays size={17} aria-hidden="true" />
+            </span>
+            <span>Simpan Calendar</span>
           </button>
         </div>
       </div>
@@ -835,37 +820,20 @@ function EventSection() {
           key={event.title}
           className="event-card overflow-hidden rounded-2xl bg-[#fbfaf7] text-center shadow-2xl shadow-[#24384c]/25"
         >
-          <div className="event-card-header relative bg-[#4f6980] px-5 pb-10 pt-8 text-white">
-            <div className="event-card-flower event-card-flower-left">
-              <Image
-                src="/images/luxury-blue-java-corner-blue-lavender.png"
-                alt=""
-                fill
-                className="object-contain"
-                sizes="120px"
-              />
-            </div>
-            <div className="event-card-flower event-card-flower-right">
-              <Image
-                src="/images/luxury-blue-java-corner-blue-lavender.png"
-                alt=""
-                fill
-                className="object-contain"
-                sizes="120px"
-              />
-            </div>
+          <div className="event-card-header relative bg-[#4f6980] px-6 pb-8 pt-8 text-white">
             <div className="relative z-10">
-              <Heart className="mx-auto fill-white text-white" size={38} />
-              <h3 data-reveal="name" className="mt-3 font-script text-[3.55rem] leading-none text-white">
+              <p className="event-card-kicker font-body">
+                Rangkaian Acara
+              </p>
+              <h3 data-reveal="name" className="event-card-title mt-3">
                 {event.title}
               </h3>
-              <div className="event-card-divider mx-auto mt-4" />
             </div>
           </div>
-          <div className="-mt-5 px-5 pb-6">
+          <div className="-mt-4 px-5 pb-6">
             <div className="relative z-10 rounded-2xl border border-[#d9dee0] bg-white px-5 py-5 shadow-xl shadow-[#30475d]/10">
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-[#4f6980]/8 px-3 py-4 text-[#4f6980]">
+                <div className="event-info-tile">
                   <CalendarDays className="mx-auto" size={22} aria-hidden="true" />
                   <p className="mt-2 font-body text-[10px] font-semibold uppercase tracking-[0.16em]">
                     Tanggal
@@ -874,8 +842,8 @@ function EventSection() {
                     02 Agustus 2026
                   </p>
                 </div>
-                <div className="rounded-xl bg-[#4f6980]/8 px-3 py-4 text-[#4f6980]">
-                  <MapPin className="mx-auto" size={22} aria-hidden="true" />
+                <div className="event-info-tile">
+                  <Clock className="mx-auto" size={22} aria-hidden="true" />
                   <p className="mt-2 font-body text-[10px] font-semibold uppercase tracking-[0.16em]">
                     Waktu
                   </p>
@@ -961,10 +929,10 @@ function LoveStorySection() {
                 {index === 0 ? (
                   <div className="love-story-photo relative mx-auto overflow-hidden bg-white">
                     <Image
-                      src="/images/anggi-hamid.jpeg"
+                      src="/images/preweding/DSC01529.jpg"
                       alt={story.title}
                       fill
-                      className="object-contain object-top"
+                      className="object-cover object-top"
                       sizes="280px"
                     />
                   </div>
@@ -996,10 +964,11 @@ function LoveStorySection() {
         <div data-reveal="zoom" className="love-story-strip mt-4 grid grid-cols-2 gap-3">
           <div className="relative h-28 overflow-hidden rounded-t-full rounded-b-xl border-2 border-white/75">
             <Image
-              src="/images/anggi-hamid2.jpeg"
+              src="/images/preweding/DSC01488.jpg"
               alt="Momen bersama Hamid dan Anggi"
               fill
-              className="object-contain object-top"
+              className="object-cover object-top"
+              style={{ objectPosition: "50% 46%" }}
               sizes="160px"
             />
           </div>
@@ -1016,10 +985,10 @@ function LoveStorySection() {
 
 function GallerySection() {
   const galleryItems = [
-    { src: "/images/art-blue-java-story.jpg", alt: "Foto prewedding pasangan" },
-    { src: "/images/art-blue-java-couple.png", alt: "Foto pasangan bersama" },
-    { src: "/images/couple-hero.png", alt: "Potret pasangan" },
-    { src: "/images/22.png", alt: "Momen galeri pasangan" }
+    { src: "/images/preweding/DSC01564.jpg", alt: "Foto prewedding pasangan" },
+    { src: "/images/preweding/DSC01463.jpg", alt: "Foto prewedding pasangan", position: "78% 50%" },
+    { src: "/images/preweding/DSC01573.jpg", alt: "Foto prewedding pasangan" },
+    { src: "/images/preweding/DSC01580.jpg", alt: "Momen galeri pasangan" }
   ];
 
   return (
@@ -1039,7 +1008,7 @@ function GallerySection() {
         <div className="gallery-board mt-7 p-3">
           <div data-reveal="zoom" className="gallery-hero relative overflow-hidden">
             <Image
-              src="/images/art-blue-java-gallery.png"
+              src="/images/preweding/DSC01359.jpg"
               alt="Galeri pernikahan"
               fill
               className="object-cover"
@@ -1069,6 +1038,7 @@ function GallerySection() {
                   alt={item.alt}
                   fill
                   className="object-cover"
+                  style={item.position ? { objectPosition: item.position } : undefined}
                   sizes="90px"
                 />
               </div>
@@ -2200,85 +2170,6 @@ function WeddingFooter() {
   );
 }
 
-function FamilySection() {
-  const invitedFamilies = [
-    "Kel. Besar Bpk. Drs. H. John Sudjupno",
-    "Kel. Besar Bpk. (Alm) Roni Taufik",
-    "Kepala sekolah dan dewan guru TK Islam Permata Hati",
-    "Kel. Besar Bpk. Ujid Juhari",
-    "Kel. Besar Bpk. Sarwan (Alm)",
-    "Kel. Besar Pon Pes Jam'iyatul Mubtadi Tsani 2",
-    "Kel. Besar Majlis Ta'lim Darussalam",
-    "Team Hadroh Masjid Darussalam",
-    "Team Work Garasi Motor",
-    "Team PB +62 Big Wood"
-  ];
-
-  return (
-    <section id="family" className="page-section side-floral-bg">
-      <SectionFloralFrame />
-      {/* <div className="relative h-28 overflow-hidden">
-        <Image
-          src="/images/luxury-blue-java-garland-blue-lavender.png"
-          alt=""
-          fill
-          className="object-cover object-bottom opacity-95"
-          sizes="430px"
-        />
-      </div> */}
-      <div className="family-section-panel bg-[#4f6980] px-6 py-12 text-center text-white">
-        <p data-reveal="up" className="font-body text-[10px] font-bold uppercase tracking-[0.34em] text-white/70">
-          Keluarga Besar
-        </p>
-        <h2 data-reveal="name" className="mt-2 font-display text-[2.45rem] uppercase leading-none tracking-[0.12em]">
-          Restu Keluarga
-        </h2>
-        <LuxuryDivider />
-
-        <div className="mt-7 grid gap-4">
-          <article data-reveal="up" className="family-parent-card family-parent-card-groom">
-            <div className="family-card-ornament" aria-hidden="true" />
-            <p className="family-card-label">Keluarga Besar</p>
-            <h3 className="family-card-title">Mempelai Pria</h3>
-            <div className="family-card-line" />
-            <p className="family-card-parents">
-              Bpk. Ujid Juhari
-              <span>&</span>
-              Ibu Ekoh
-            </p>
-          </article>
-
-          <article data-reveal="up" className="family-parent-card">
-            <div className="family-card-ornament" aria-hidden="true" />
-            <p className="family-card-label">Keluarga Besar</p>
-            <h3 className="family-card-title">Mempelai Wanita</h3>
-            <div className="family-card-line" />
-            <p className="family-card-parents">
-              Bpk. Roni Taufik (Alm)
-              <span>&</span>
-              Ibu Warini
-            </p>
-          </article>
-        </div>
-
-        <div className="mx-auto my-9 h-px w-52 bg-white/75" />
-        <p data-reveal="up" className="font-display text-xl italic">Turut Mengundang:</p>
-        <ul data-reveal="up" className="mx-auto mt-5 max-w-[21rem] space-y-2 text-left font-display text-lg italic leading-6">
-          {invitedFamilies.map((family) => (
-            <li key={family} className="flex gap-2">
-              <span className="mt-[0.48rem] h-1.5 w-1.5 shrink-0 rounded-full bg-white/82" />
-              <span>{family}</span>
-            </li>
-          ))}
-        </ul>
-        <p data-reveal="up" className="mt-6 font-display text-xl italic leading-7">
-          Dan seluruh keluarga lainnya.
-        </p>
-      </div>
-    </section>
-  );
-}
-
 function LuxuryDivider({ tone = "light" }: { tone?: "light" | "blue" }) {
   return (
     <div
@@ -2368,9 +2259,9 @@ function MusicButton() {
         title={isPlaying ? "Jeda musik" : "Putar musik"}
       >
         {isPlaying ? (
-          <Music2 size={20} aria-hidden="true" />
+          <Disc3 className="music-control-disc" size={20} aria-hidden="true" />
         ) : (
-          <Pause className="music-control-pause" size={19} aria-hidden="true" />
+          <Play className="music-control-play" size={18} aria-hidden="true" />
         )}
       </button>
     </>
@@ -2405,7 +2296,7 @@ function BottomNav({
       </button>
 
       <nav
-        className={`fixed bottom-10 z-40 rounded-2xl border border-white/18 bg-[#4f6980]/78 p-2 shadow-2xl shadow-black/18 backdrop-blur-md transition-all duration-500 ease-out ${
+        className={`bottom-nav-panel fixed bottom-10 z-40 ${
           isNavOpen
             ? "translate-x-0 opacity-100"
             : "-translate-x-[115%] opacity-0"
@@ -2415,7 +2306,7 @@ function BottomNav({
           width: "min(calc(100vw - 5rem), 348px)"
         }}
       >
-        <div className="grid grid-cols-8 gap-1">
+        <div className="bottom-nav-grid">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
@@ -2425,15 +2316,13 @@ function BottomNav({
                 key={item.id}
                 type="button"
                 onClick={() => handleSelect(item.id)}
-                className={`flex h-11 items-center justify-center rounded-xl transition ${
-                  isActive
-                    ? "bg-white/90 text-[#4f6980]"
-                    : "bg-white/8 text-white/86 hover:bg-white/16"
-                }`}
+                className={`bottom-nav-item ${isActive ? "bottom-nav-item-active" : ""}`}
                 aria-label={item.label}
                 title={item.label}
               >
-                <Icon size={17} aria-hidden="true" />
+                <span className="bottom-nav-icon">
+                  <Icon size={18} strokeWidth={2.25} aria-hidden="true" />
+                </span>
               </button>
             );
           })}
