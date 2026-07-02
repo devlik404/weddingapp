@@ -7,11 +7,11 @@ import {
   CalendarDays,
   Camera,
   CheckCircle2,
+  Clock,
   Copy,
   Disc3,
   FileText,
   Gift,
-  Heart,
   Home,
   Instagram,
   MailOpen,
@@ -820,37 +820,20 @@ function EventSection() {
           key={event.title}
           className="event-card overflow-hidden rounded-2xl bg-[#fbfaf7] text-center shadow-2xl shadow-[#24384c]/25"
         >
-          <div className="event-card-header relative bg-[#4f6980] px-5 pb-10 pt-8 text-white">
-            <div className="event-card-flower event-card-flower-left">
-              <Image
-                src="/images/luxury-blue-java-corner-blue-lavender.png"
-                alt=""
-                fill
-                className="object-contain"
-                sizes="120px"
-              />
-            </div>
-            <div className="event-card-flower event-card-flower-right">
-              <Image
-                src="/images/luxury-blue-java-corner-blue-lavender.png"
-                alt=""
-                fill
-                className="object-contain"
-                sizes="120px"
-              />
-            </div>
+          <div className="event-card-header relative bg-[#4f6980] px-6 pb-8 pt-8 text-white">
             <div className="relative z-10">
-              <Heart className="mx-auto fill-white text-white" size={38} />
-              <h3 data-reveal="name" className="mt-3 font-script text-[3.55rem] leading-none text-white">
+              <p className="event-card-kicker font-body">
+                Rangkaian Acara
+              </p>
+              <h3 data-reveal="name" className="event-card-title mt-3">
                 {event.title}
               </h3>
-              <div className="event-card-divider mx-auto mt-4" />
             </div>
           </div>
-          <div className="-mt-5 px-5 pb-6">
+          <div className="-mt-4 px-5 pb-6">
             <div className="relative z-10 rounded-2xl border border-[#d9dee0] bg-white px-5 py-5 shadow-xl shadow-[#30475d]/10">
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-[#4f6980]/8 px-3 py-4 text-[#4f6980]">
+                <div className="event-info-tile">
                   <CalendarDays className="mx-auto" size={22} aria-hidden="true" />
                   <p className="mt-2 font-body text-[10px] font-semibold uppercase tracking-[0.16em]">
                     Tanggal
@@ -859,8 +842,8 @@ function EventSection() {
                     02 Agustus 2026
                   </p>
                 </div>
-                <div className="rounded-xl bg-[#4f6980]/8 px-3 py-4 text-[#4f6980]">
-                  <MapPin className="mx-auto" size={22} aria-hidden="true" />
+                <div className="event-info-tile">
+                  <Clock className="mx-auto" size={22} aria-hidden="true" />
                   <p className="mt-2 font-body text-[10px] font-semibold uppercase tracking-[0.16em]">
                     Waktu
                   </p>
