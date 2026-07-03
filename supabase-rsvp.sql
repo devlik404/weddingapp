@@ -69,6 +69,135 @@ using (true);
 create index if not exists gift_transfers_created_at_idx
 on public.gift_transfers (created_at desc);
 
+create table if not exists public.invited_guests (
+  id uuid primary key default gen_random_uuid(),
+  guest_name text not null check (char_length(trim(guest_name)) between 1 and 120),
+  whatsapp_number text not null check (whatsapp_number ~ '^[0-9]{8,20}$'),
+  invitation_link text not null check (char_length(trim(invitation_link)) between 1 and 300),
+  message_template text not null check (char_length(trim(message_template)) between 1 and 1600),
+  invited_at timestamptz not null default now()
+);
+
+alter table public.invited_guests enable row level security;
+
+create unique index if not exists invited_guests_whatsapp_number_idx
+on public.invited_guests (whatsapp_number);
+
+create index if not exists invited_guests_invited_at_idx
+on public.invited_guests (invited_at desc);
+
+drop function if exists public.record_invited_guest(text, text, text, text, text);
+
+create function public.record_invited_guest(
+  export_secret text,
+  p_guest_name text,
+  p_whatsapp_number text,
+  p_invitation_link text,
+  p_message_template text
+)
+returns table (
+  id uuid,
+  guest_name text,
+  whatsapp_number text,
+  invitation_link text,
+  invited_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if export_secret is distinct from 'anggi dan hamid' then
+    raise exception 'Invalid export secret';
+  end if;
+
+  return query
+  insert into public.invited_guests (
+    guest_name,
+    whatsapp_number,
+    invitation_link,
+    message_template,
+    invited_at
+  )
+  values (
+    trim(p_guest_name),
+    trim(p_whatsapp_number),
+    trim(p_invitation_link),
+    trim(p_message_template),
+    now()
+  )
+  on conflict (whatsapp_number) do update
+  set
+    guest_name = excluded.guest_name,
+    invitation_link = excluded.invitation_link,
+    message_template = excluded.message_template,
+    invited_at = now()
+  returning
+    invited_guests.id,
+    invited_guests.guest_name,
+    invited_guests.whatsapp_number,
+    invited_guests.invitation_link,
+    invited_guests.invited_at;
+end;
+$$;
+
+drop function if exists public.export_invited_guests(text);
+
+create function public.export_invited_guests(export_secret text)
+returns table (
+  id uuid,
+  guest_name text,
+  whatsapp_number text,
+  invitation_link text,
+  invited_at timestamptz
+)
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if export_secret is distinct from 'anggi dan hamid' then
+    raise exception 'Invalid export secret';
+  end if;
+
+  return query
+  select
+    invited_guests.id,
+    invited_guests.guest_name,
+    invited_guests.whatsapp_number,
+    invited_guests.invitation_link,
+    invited_guests.invited_at
+  from public.invited_guests
+  order by invited_guests.invited_at desc;
+end;
+$$;
+
+drop function if exists public.clear_invited_guests(text);
+
+create function public.clear_invited_guests(export_secret text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if export_secret is distinct from 'anggi dan hamid' then
+    raise exception 'Invalid export secret';
+  end if;
+
+  delete from public.invited_guests;
+end;
+$$;
+
+revoke all on function public.record_invited_guest(text, text, text, text, text) from public;
+grant execute on function public.record_invited_guest(text, text, text, text, text) to anon;
+
+revoke all on function public.export_invited_guests(text) from public;
+grant execute on function public.export_invited_guests(text) to anon;
+
+revoke all on function public.clear_invited_guests(text) from public;
+grant execute on function public.clear_invited_guests(text) to anon;
+
 drop function if exists public.export_gift_transfers(text);
 
 create function public.export_gift_transfers(export_secret text)
