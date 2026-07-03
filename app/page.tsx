@@ -1113,9 +1113,9 @@ type InvitedGuestExport = {
 
 function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: string }) {
   const [template, setTemplate] = useState(defaultBroadcastTemplate);
-  const [guests, setGuests] = useState<BroadcastGuest[]>([
-    { id: "guest-1", name: "", phone: "" }
-  ]);
+  const [guests, setGuests] = useState<BroadcastGuest[]>([]);
+  const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+  const [guestDraft, setGuestDraft] = useState({ name: "", phone: "" });
   const [invitedGuests, setInvitedGuests] = useState<InvitedGuestHistory[]>([]);
   const [broadcastStatus, setBroadcastStatus] = useState("");
 
@@ -1259,18 +1259,37 @@ function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: strin
     );
   };
 
-  const addGuest = () => {
+  const openGuestModal = () => {
+    setGuestDraft({ name: "", phone: "" });
+    setIsGuestModalOpen(true);
+  };
+
+  const addGuestFromModal = () => {
+    const name = guestDraft.name.trim();
+    const phone = guestDraft.phone.trim();
+
+    if (!name || !phone) {
+      setBroadcastStatus("Nama tamu dan nomor WhatsApp wajib diisi.");
+      return;
+    }
+
+    if (!normalizeWhatsappNumber(phone)) {
+      setBroadcastStatus("Nomor WhatsApp belum valid.");
+      return;
+    }
+
     setGuests((currentGuests) => [
       ...currentGuests,
-      { id: `guest-${Date.now()}`, name: "", phone: "" }
+      { id: `guest-${Date.now()}`, name, phone }
     ]);
+    setGuestDraft({ name: "", phone: "" });
+    setIsGuestModalOpen(false);
+    setBroadcastStatus("Tamu berhasil ditambahkan ke daftar.");
   };
 
   const removeGuest = (id: string) => {
     setGuests((currentGuests) =>
-      currentGuests.length === 1
-        ? [{ id: "guest-1", name: "", phone: "" }]
-        : currentGuests.filter((guest) => guest.id !== id)
+      currentGuests.filter((guest) => guest.id !== id)
     );
   };
 
@@ -1295,9 +1314,16 @@ function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: strin
       return;
     }
 
-    const openedWindows = validGuests.map(() =>
-      window.open("about:blank", "_blank", "noopener,noreferrer")
-    );
+    const openedWindows = validGuests.map((guest) => {
+      const openedWindow = window.open("about:blank", "_blank");
+
+      if (openedWindow) {
+        openedWindow.document.title = "Membuka WhatsApp...";
+        openedWindow.document.body.innerHTML = `<p style="font-family: Arial, sans-serif; padding: 24px; color: #3f5f77;">Membuka WhatsApp untuk ${guest.name.trim() || "Tamu Undangan"}...</p>`;
+      }
+
+      return openedWindow;
+    });
     const blockedCount = openedWindows.filter((openedWindow) => !openedWindow).length;
 
     validGuests.forEach((guest, index) => {
@@ -1368,7 +1394,7 @@ function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: strin
     <div className="gift-broadcast-box mt-5 text-left">
       <div className="gift-broadcast-heading">
         <p>Daftar Tamu WhatsApp</p>
-        <button type="button" onClick={addGuest} className="gift-broadcast-add">
+        <button type="button" onClick={openGuestModal} className="gift-broadcast-add">
           <Plus size={15} aria-hidden="true" />
           <span>Tambah</span>
         </button>
@@ -1385,7 +1411,7 @@ function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: strin
       </label>
 
       <div className="gift-broadcast-guests">
-        {guests.map((guest, index) => (
+        {guests.length ? guests.map((guest, index) => (
           <div key={guest.id} className="gift-broadcast-guest">
             <div className="gift-broadcast-guest-top">
               <span>Tamu {index + 1}</span>
@@ -1434,8 +1460,18 @@ function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: strin
               <span>Buka WA</span>
             </button>
           </div>
-        ))}
+        )) : (
+          <button type="button" className="gift-broadcast-empty" onClick={openGuestModal}>
+            <Plus size={18} aria-hidden="true" />
+            <span>Tambah tamu untuk mulai broadcast WhatsApp.</span>
+          </button>
+        )}
       </div>
+
+      <button type="button" className="gift-broadcast-open gift-broadcast-add-bottom" onClick={openGuestModal}>
+        <Plus size={15} aria-hidden="true" />
+        <span>Tambah Tamu</span>
+      </button>
 
       <div className="gift-broadcast-actions">
         <button type="button" onClick={openAllWhatsappMessages}>
@@ -1483,6 +1519,66 @@ function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: strin
           <p className="gift-invited-empty font-black">Belum ada tamu yang dibuka lewat WhatsApp.</p>
         )}
       </div>
+
+      {isGuestModalOpen ? (
+        <div className="gift-guest-modal" role="dialog" aria-modal="true" aria-labelledby="gift-guest-modal-title">
+          <div className="gift-guest-modal-card">
+            <button
+              type="button"
+              className="gift-guest-modal-close"
+              onClick={() => setIsGuestModalOpen(false)}
+              aria-label="Tutup form tambah tamu"
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+            <p className="gift-guest-modal-kicker">Tambah Tamu</p>
+            <h3 id="gift-guest-modal-title" className="gift-guest-modal-title">
+              Data WhatsApp
+            </h3>
+            <div className="gift-guest-modal-fields">
+              <label className="gift-broadcast-field">
+                <span>Nama Tamu</span>
+                <input
+                  type="text"
+                  value={guestDraft.name}
+                  onChange={(event) =>
+                    setGuestDraft((currentDraft) => ({
+                      ...currentDraft,
+                      name: event.target.value
+                    }))
+                  }
+                  placeholder="Rahma & partner"
+                  autoFocus
+                />
+              </label>
+              <label className="gift-broadcast-field">
+                <span>No WhatsApp</span>
+                <input
+                  type="tel"
+                  inputMode="tel"
+                  value={guestDraft.phone}
+                  onChange={(event) =>
+                    setGuestDraft((currentDraft) => ({
+                      ...currentDraft,
+                      phone: event.target.value
+                    }))
+                  }
+                  placeholder="08xxxxxxxxxx"
+                />
+              </label>
+            </div>
+            <div className="gift-guest-modal-actions">
+              <button type="button" onClick={() => setIsGuestModalOpen(false)}>
+                Batal
+              </button>
+              <button type="button" onClick={addGuestFromModal}>
+                <Plus size={15} aria-hidden="true" />
+                <span>Simpan Tamu</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

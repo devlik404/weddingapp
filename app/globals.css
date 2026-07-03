@@ -1239,6 +1239,24 @@ button {
   gap: 0.8rem;
 }
 
+.gift-broadcast-empty {
+  display: flex;
+  min-height: 4.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  border: 1px dashed rgba(79, 105, 128, 0.26);
+  border-radius: 1.05rem;
+  background: rgba(255, 255, 255, 0.42);
+  color: rgba(63, 95, 119, 0.78);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 850;
+  line-height: 1.45;
+  padding: 0.85rem;
+  text-align: center;
+}
+
 .gift-broadcast-guest {
   display: grid;
   gap: 0.65rem;
@@ -1271,6 +1289,10 @@ button {
   grid-template-columns: 1.1fr 0.9fr;
 }
 
+.gift-broadcast-add-bottom {
+  min-height: 2.75rem;
+}
+
 .gift-broadcast-status {
   color: rgba(79, 105, 128, 0.72);
   font-family: var(--font-body);
@@ -1278,6 +1300,99 @@ button {
   font-weight: 750;
   line-height: 1.5;
   text-align: center;
+}
+
+.gift-guest-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(31, 39, 48, 0.54);
+  padding: 1.2rem;
+}
+
+.gift-guest-modal-card {
+  position: relative;
+  width: min(100%, 23rem);
+  border: 1px solid rgba(238, 245, 245, 0.64);
+  border-radius: 1.25rem;
+  background:
+    linear-gradient(180deg, rgba(251, 250, 247, 0.98), rgba(238, 245, 245, 0.96));
+  padding: 1.2rem;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    0 26px 60px rgba(31, 39, 48, 0.32);
+}
+
+.gift-guest-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: inline-flex;
+  width: 2.15rem;
+  height: 2.15rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(79, 105, 128, 0.1);
+  color: #4f6980;
+}
+
+.gift-guest-modal-kicker {
+  color: rgba(79, 105, 128, 0.7);
+  font-family: var(--font-body);
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.gift-guest-modal-title {
+  margin-top: 0.25rem;
+  color: #3f5f77;
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.gift-guest-modal-fields {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1.1rem;
+}
+
+.gift-guest-modal-actions {
+  display: grid;
+  grid-template-columns: 0.82fr 1.18fr;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.gift-guest-modal-actions button {
+  display: inline-flex;
+  min-height: 2.85rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gift-guest-modal-actions button:first-child {
+  border: 1px solid rgba(79, 105, 128, 0.2);
+  color: #4f6980;
+}
+
+.gift-guest-modal-actions button:last-child {
+  background: linear-gradient(135deg, #4f6980, #3f5f77);
+  color: #fff;
+  box-shadow: 0 12px 24px rgba(63, 95, 119, 0.2);
 }
 
 .gift-invited-history {
