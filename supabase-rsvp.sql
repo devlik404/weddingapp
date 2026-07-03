@@ -106,6 +106,7 @@ language plpgsql
 security definer
 set search_path = public
 as $$
+#variable_conflict use_column
 begin
   if export_secret is distinct from 'anggi dan hamid' then
     raise exception 'Invalid export secret';
@@ -189,6 +190,24 @@ begin
 end;
 $$;
 
+drop function if exists public.delete_invited_guest(text, uuid);
+
+create function public.delete_invited_guest(export_secret text, p_invited_guest_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if export_secret is distinct from 'anggi dan hamid' then
+    raise exception 'Invalid export secret';
+  end if;
+
+  delete from public.invited_guests
+  where invited_guests.id = p_invited_guest_id;
+end;
+$$;
+
 revoke all on function public.record_invited_guest(text, text, text, text, text) from public;
 grant execute on function public.record_invited_guest(text, text, text, text, text) to anon;
 
@@ -197,6 +216,9 @@ grant execute on function public.export_invited_guests(text) to anon;
 
 revoke all on function public.clear_invited_guests(text) from public;
 grant execute on function public.clear_invited_guests(text) to anon;
+
+revoke all on function public.delete_invited_guest(text, uuid) from public;
+grant execute on function public.delete_invited_guest(text, uuid) to anon;
 
 drop function if exists public.export_gift_transfers(text);
 
