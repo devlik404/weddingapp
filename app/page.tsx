@@ -10,6 +10,7 @@ import {
   Clock,
   Copy,
   Disc3,
+  ExternalLink,
   FileText,
   Gift,
   Home,
@@ -19,8 +20,10 @@ import {
   Menu,
   MessageCircle,
   Play,
+  Plus,
   Send,
   Table2,
+  Trash2,
   Upload,
   UsersRound,
   X
@@ -117,6 +120,25 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const giftProofBucket = process.env.NEXT_PUBLIC_SUPABASE_GIFT_BUCKET ?? "gift-proofs";
 const giftExportSecretValue = "anggi dan hamid";
+const publicSiteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://undangan-anggi-hamid.vercel.app").replace(/\/$/, "");
+const defaultBroadcastTemplate = [
+  "Assalamualaikum Warahmatullahi Wabarakatuh",
+  "",
+  "Tanpa mengurangi rasa hormat, perkenankan kami mengundang Bapak/Ibu/Saudara/i {nama} untuk menghadiri acara kami.",
+  "",
+  "Berikut link undangan kami, untuk info lengkap dari acara bisa kunjungi :",
+  "",
+  "{link}",
+  "",
+  "Merupakan suatu kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan untuk hadir dan memberikan doa restu.",
+  "",
+  "Terima kasih banyak atas perhatiannya.",
+  "",
+  "Wassalamualaikum Warahmatullahi Wabarakatuh",
+  "",
+  "Hormat Kami,",
+  "Hamid & Anggi"
+].join("\n");
 
 const whatsappContacts = [
   {
@@ -271,6 +293,7 @@ export default function HomePage() {
   const [giftExportSecret, setGiftExportSecret] = useState("");
   const [isInvitationOpen, setIsInvitationOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("opening");
+  const isGiftExportMode = giftExportSecret === giftExportSecretValue;
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -286,13 +309,17 @@ export default function HomePage() {
       setGuestName(guest.replace(/\+/g, " ").trim());
     }
 
+    const secretExportParam = params.get("secret-export-history-transfer");
+
     setGiftExportSecret(
-      params.get("secret-export-history-transfer")?.replace(/\+/g, " ").trim() ?? ""
+      params.has("secret-export-history-transfer") && !secretExportParam
+        ? giftExportSecretValue
+        : secretExportParam?.replace(/\+/g, " ").trim() ?? ""
     );
   }, []);
 
   useEffect(() => {
-    if (!isInvitationOpen) {
+    if (!isInvitationOpen && !isGiftExportMode) {
       return;
     }
 
@@ -311,10 +338,10 @@ export default function HomePage() {
     elements.forEach((element) => observer.observe(element));
 
     return () => observer.disconnect();
-  }, [isInvitationOpen]);
+  }, [isInvitationOpen, isGiftExportMode]);
 
   useEffect(() => {
-    if (!isInvitationOpen) {
+    if (!isInvitationOpen && !isGiftExportMode) {
       return;
     }
 
@@ -335,7 +362,7 @@ export default function HomePage() {
     sections.forEach((section) => observer.observe(section));
 
     return () => observer.disconnect();
-  }, [isInvitationOpen]);
+  }, [isInvitationOpen, isGiftExportMode]);
 
   const scrollToSection = (sectionId: string) => {
     document.getElementById(sectionId)?.scrollIntoView({
@@ -343,6 +370,19 @@ export default function HomePage() {
       block: "start"
     });
   };
+
+  if (isGiftExportMode) {
+    return (
+      <main className="fixed-invitation-backdrop min-h-screen bg-[#34363b] text-[#1f2730]">
+        <div className="invitation-scroll relative z-10 mx-auto w-full max-w-[430px] overflow-hidden bg-transparent shadow-2xl shadow-black/30">
+          <GiftSection
+            guestName={guestName}
+            giftExportSecret={giftExportSecret}
+          />
+        </div>
+      </main>
+    );
+  }
 
   if (!isInvitationOpen) {
     return (
@@ -1050,6 +1090,403 @@ function GallerySection() {
   );
 }
 
+type BroadcastGuest = {
+  id: string;
+  name: string;
+  phone: string;
+};
+
+type InvitedGuestHistory = {
+  id: string;
+  name: string;
+  phone: string;
+  invitedAt: string;
+};
+
+type InvitedGuestExport = {
+  id: string;
+  guest_name: string;
+  whatsapp_number: string;
+  invitation_link: string;
+  invited_at: string;
+};
+
+function BroadcastInvitationTool({ giftExportSecret }: { giftExportSecret: string }) {
+  const [template, setTemplate] = useState(defaultBroadcastTemplate);
+  const [guests, setGuests] = useState<BroadcastGuest[]>([
+    { id: "guest-1", name: "", phone: "" }
+  ]);
+  const [invitedGuests, setInvitedGuests] = useState<InvitedGuestHistory[]>([]);
+  const [broadcastStatus, setBroadcastStatus] = useState("");
+
+  const mapInvitedGuest = (guest: InvitedGuestExport): InvitedGuestHistory => ({
+    id: guest.id,
+    name: guest.guest_name,
+    phone: guest.whatsapp_number,
+    invitedAt: guest.invited_at
+  });
+
+  const loadInvitedGuests = async () => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setBroadcastStatus("Supabase belum tersedia untuk menyimpan data undangan.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/export_invited_guests`, {
+        method: "POST",
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ export_secret: giftExportSecret })
+      });
+
+      if (!response.ok) {
+        throw new Error("Invited guest export failed");
+      }
+
+      const rows = (await response.json()) as InvitedGuestExport[];
+      setInvitedGuests(rows.map(mapInvitedGuest));
+    } catch {
+      setBroadcastStatus("Gagal memuat data tamu yang telah diundang.");
+    }
+  };
+
+  useEffect(() => {
+    loadInvitedGuests();
+  }, [giftExportSecret]);
+
+  const getInvitationLink = (name: string) => {
+    const guestName = name.trim() || "Tamu Undangan";
+    const params = new URLSearchParams({ to: guestName });
+
+    return `${publicSiteUrl}/?${params.toString()}`;
+  };
+
+  const normalizeWhatsappNumber = (phone: string) => {
+    const digits = phone.replace(/\D/g, "");
+
+    if (!digits) {
+      return "";
+    }
+
+    if (digits.startsWith("0")) {
+      return `62${digits.slice(1)}`;
+    }
+
+    if (digits.startsWith("8")) {
+      return `62${digits}`;
+    }
+
+    return digits;
+  };
+
+  const buildMessage = (guest: BroadcastGuest) =>
+    template
+      .replaceAll("{nama}", guest.name.trim() || "Tamu Undangan")
+      .replaceAll("{link}", getInvitationLink(guest.name));
+
+  const buildWhatsappGuestLink = (guest: BroadcastGuest) => {
+    const phone = normalizeWhatsappNumber(guest.phone);
+
+    if (!phone) {
+      return "";
+    }
+
+    return `https://wa.me/${phone}?text=${encodeURIComponent(buildMessage(guest))}`;
+  };
+
+  const markGuestAsInvited = async (guest: BroadcastGuest) => {
+    const phone = normalizeWhatsappNumber(guest.phone);
+
+    if (!phone) {
+      return;
+    }
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setBroadcastStatus("Supabase belum tersedia untuk menyimpan data undangan.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/record_invited_guest`, {
+        method: "POST",
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          export_secret: giftExportSecret,
+          p_guest_name: guest.name.trim() || "Tamu Undangan",
+          p_whatsapp_number: phone,
+          p_invitation_link: getInvitationLink(guest.name),
+          p_message_template: template
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Invited guest insert failed");
+      }
+
+      const rows = (await response.json()) as InvitedGuestExport[];
+      const invitedGuest = rows[0] ? mapInvitedGuest(rows[0]) : null;
+
+      if (!invitedGuest) {
+        await loadInvitedGuests();
+        return;
+      }
+
+      setInvitedGuests((currentGuests) => {
+        const otherGuests = currentGuests.filter(
+          (currentGuest) => currentGuest.phone !== invitedGuest.phone
+        );
+
+        return [invitedGuest, ...otherGuests];
+      });
+    } catch {
+      setBroadcastStatus("Pesan terbuka, tapi data undangan gagal disimpan ke database.");
+    }
+  };
+
+  const updateGuest = (id: string, field: keyof Omit<BroadcastGuest, "id">, value: string) => {
+    setGuests((currentGuests) =>
+      currentGuests.map((guest) =>
+        guest.id === id ? { ...guest, [field]: value } : guest
+      )
+    );
+  };
+
+  const addGuest = () => {
+    setGuests((currentGuests) => [
+      ...currentGuests,
+      { id: `guest-${Date.now()}`, name: "", phone: "" }
+    ]);
+  };
+
+  const removeGuest = (id: string) => {
+    setGuests((currentGuests) =>
+      currentGuests.length === 1
+        ? [{ id: "guest-1", name: "", phone: "" }]
+        : currentGuests.filter((guest) => guest.id !== id)
+    );
+  };
+
+  const openWhatsappForGuest = (guest: BroadcastGuest) => {
+    const whatsappLink = buildWhatsappGuestLink(guest);
+
+    if (!whatsappLink) {
+      setBroadcastStatus("Isi nomor WhatsApp terlebih dahulu.");
+      return;
+    }
+
+    window.open(whatsappLink, "_blank", "noopener,noreferrer");
+    void markGuestAsInvited(guest);
+    setBroadcastStatus("Pesan sudah dibuka di WhatsApp. Klik kirim dari WhatsApp.");
+  };
+
+  const openAllWhatsappMessages = () => {
+    const validGuests = guests.filter((guest) => buildWhatsappGuestLink(guest));
+
+    if (!validGuests.length) {
+      setBroadcastStatus("Belum ada nomor WhatsApp yang valid.");
+      return;
+    }
+
+    const openedWindows = validGuests.map(() =>
+      window.open("about:blank", "_blank", "noopener,noreferrer")
+    );
+    const blockedCount = openedWindows.filter((openedWindow) => !openedWindow).length;
+
+    validGuests.forEach((guest, index) => {
+      const whatsappLink = buildWhatsappGuestLink(guest);
+      const openedWindow = openedWindows[index];
+
+      window.setTimeout(() => {
+        if (openedWindow) {
+          openedWindow.location.href = whatsappLink;
+        } else {
+          window.open(whatsappLink, "_blank", "noopener,noreferrer");
+        }
+
+        void markGuestAsInvited(guest);
+      }, index * 450);
+    });
+
+    setBroadcastStatus(
+      blockedCount
+        ? `${validGuests.length - blockedCount} chat dibuka, ${blockedCount} diblokir browser. Izinkan popup untuk buka semua.`
+        : `${validGuests.length} chat WhatsApp dibuka sekaligus. WhatsApp tetap perlu klik kirim manual.`
+    );
+  };
+
+  const clearInvitedGuests = async () => {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setBroadcastStatus("Supabase belum tersedia.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${supabaseUrl}/rest/v1/rpc/clear_invited_guests`, {
+        method: "POST",
+        headers: {
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ export_secret: giftExportSecret })
+      });
+
+      if (!response.ok) {
+        throw new Error("Invited guest clear failed");
+      }
+
+      setInvitedGuests([]);
+      setBroadcastStatus("Daftar tamu yang telah diundang sudah dibersihkan dari database.");
+    } catch {
+      setBroadcastStatus("Gagal membersihkan data tamu di database.");
+    }
+  };
+
+  const copyAllInvitationLinks = async () => {
+    const links = guests
+      .filter((guest) => guest.name.trim())
+      .map((guest) => `${guest.name.trim()} - ${getInvitationLink(guest.name)}`);
+
+    if (!links.length) {
+      setBroadcastStatus("Isi minimal satu nama tamu untuk copy link.");
+      return;
+    }
+
+    await navigator.clipboard?.writeText(links.join("\n"));
+    setBroadcastStatus("Semua link undangan berhasil disalin.");
+  };
+
+  return (
+    <div className="gift-broadcast-box mt-5 text-left">
+      <div className="gift-broadcast-heading">
+        <p>Daftar Tamu WhatsApp</p>
+        <button type="button" onClick={addGuest} className="gift-broadcast-add">
+          <Plus size={15} aria-hidden="true" />
+          <span>Tambah</span>
+        </button>
+      </div>
+
+      <label className="gift-broadcast-field">
+        <span>Template Pesan</span>
+        <textarea
+          value={template}
+          onChange={(event) => setTemplate(event.target.value)}
+          rows={9}
+          placeholder="Gunakan {nama} dan {link} untuk otomatis terisi."
+        />
+      </label>
+
+      <div className="gift-broadcast-guests">
+        {guests.map((guest, index) => (
+          <div key={guest.id} className="gift-broadcast-guest">
+            <div className="gift-broadcast-guest-top">
+              <span>Tamu {index + 1}</span>
+              <button
+                type="button"
+                onClick={() => removeGuest(guest.id)}
+                aria-label={`Hapus tamu ${index + 1}`}
+              >
+                <Trash2 size={15} aria-hidden="true" />
+              </button>
+            </div>
+            <label className="gift-broadcast-field">
+              <span>Nama Tamu</span>
+              <input
+                type="text"
+                value={guest.name}
+                onChange={(event) => updateGuest(guest.id, "name", event.target.value)}
+                placeholder="Rahma & partner"
+              />
+            </label>
+            <label className="gift-broadcast-field">
+              <span>No WhatsApp</span>
+              <input
+                type="tel"
+                inputMode="tel"
+                value={guest.phone}
+                onChange={(event) => updateGuest(guest.id, "phone", event.target.value)}
+                placeholder="08xxxxxxxxxx"
+              />
+            </label>
+            <label className="gift-broadcast-field">
+              <span>Link Undangan</span>
+              <input
+                type="text"
+                value={getInvitationLink(guest.name)}
+                readOnly
+                className="gift-broadcast-readonly"
+              />
+            </label>
+            <button
+              type="button"
+              className="gift-broadcast-open"
+              onClick={() => openWhatsappForGuest(guest)}
+            >
+              <ExternalLink size={15} aria-hidden="true" />
+              <span>Buka WA</span>
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="gift-broadcast-actions">
+        <button type="button" onClick={openAllWhatsappMessages}>
+          <MessageCircle size={16} aria-hidden="true" />
+          <span>Buka Semua WA</span>
+        </button>
+        <button type="button" onClick={copyAllInvitationLinks}>
+          <Copy size={16} aria-hidden="true" />
+          <span>Copy Link</span>
+        </button>
+      </div>
+      <p className="gift-broadcast-status">
+        {broadcastStatus || "WhatsApp akan terbuka dengan pesan siap kirim."}
+      </p>
+
+      <div className="gift-invited-history">
+        <div className="gift-broadcast-heading">
+          <p>Telah Diundang</p>
+          {invitedGuests.length ? (
+            <button type="button" onClick={clearInvitedGuests} className="gift-invited-clear">
+              Bersihkan
+            </button>
+          ) : null}
+        </div>
+        {invitedGuests.length ? (
+          <div className="gift-invited-list">
+            {invitedGuests.map((guest) => (
+              <div key={guest.id} className="gift-invited-item">
+                <div>
+                  <strong>{guest.name}</strong>
+                  <span>{guest.phone}</span>
+                </div>
+                <time dateTime={guest.invitedAt}>
+                  {new Intl.DateTimeFormat("id-ID", {
+                    day: "2-digit",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                  }).format(new Date(guest.invitedAt))}
+                </time>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="gift-invited-empty font-black">Belum ada tamu yang dibuka lewat WhatsApp.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function GiftSection({
   guestName,
   giftExportSecret
@@ -1638,19 +2075,22 @@ function GiftSection({
 
         <div className="relative z-10 mx-auto w-full max-w-sm">
           <p data-reveal="up" className="text-center font-body text-[10px] font-bold uppercase tracking-[0.34em] text-white/70">
-            Tanda Kasih
+            {isGiftExportMode ? "Cashless Gift" : "Tanda Kasih"}
           </p>
           <h2 data-reveal="up" className="mt-2 text-center font-display text-[2.55rem] uppercase leading-none tracking-[0.12em]">
-            Wedding Gift
+            {isGiftExportMode ? "Export History Transfer" : "Wedding Gift"}
           </h2>
           <LuxuryDivider />
-          <p data-reveal="up" className="mx-auto mt-3 max-w-[18rem] text-center font-display text-xl italic leading-7 text-white/90">
-            Doa restu Anda merupakan hadiah terindah bagi kami. Namun jika ingin
-            berbagi tanda kasih, dapat melalui rekening berikut.
-          </p>
+          {!isGiftExportMode ? (
+            <p data-reveal="up" className="mx-auto mt-3 max-w-[18rem] text-center font-display text-xl italic leading-7 text-white/90">
+              Doa restu Anda merupakan hadiah terindah bagi kami. Namun jika ingin
+              berbagi tanda kasih, dapat melalui rekening berikut.
+            </p>
+          ) : null}
 
        
 
+        {!isGiftExportMode ? (
         <div className="mt-4 space-y-4">
           {bankAccounts.map((account) => (
             <article data-reveal="up" key={account.plainNumber} className="space-y-3">
@@ -1716,6 +2156,7 @@ function GiftSection({
             </article>
           ))}
         </div>
+        ) : null}
          <div data-reveal="zoom" className="gift-envelope mt-6 px-5 py-6 text-center">
           <Gift className="mx-auto text-[#4f6980]" size={38} aria-hidden="true" />
           <p className="mt-4 font-body text-[11px] font-bold uppercase tracking-[0.22em] text-[#4f6980]/70">
@@ -1729,6 +2170,8 @@ function GiftSection({
               : "Dukungan anda merupakan do'a dan kebahagiaan bagi kami. Silahkan kirim bukti transfer anda yuk"}
           </p>
           {isGiftExportMode ? (
+            <>
+            <BroadcastInvitationTool giftExportSecret={giftExportSecret} />
             <div className="gift-export-box mt-5">
               <div className="gift-export-summary">
                 <span>Total Transfer</span>
@@ -1770,6 +2213,7 @@ function GiftSection({
                 {isGiftExportLoading ? "Memuat..." : "Refresh History"}
               </button>
             </div>
+            </>
           ) : isGiftUploadComplete ? (
             <div className="gift-proof-thanks mt-5">
               <CheckCircle2 size={24} aria-hidden="true" />
