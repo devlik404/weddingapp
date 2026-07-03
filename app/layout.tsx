@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://undangan-anggi-hamid.vercel.app").replace(/\/$/, "");
 const invitationTitle = "Undangan Pernikahan Hamid & Anggi";
 const invitationDescription =
   "Dengan penuh cinta, kami mengundang Bapak/Ibu/Saudara/i untuk hadir dan memberi doa restu di hari bahagia kami.";
-const ogImage = "/images/preweding/DSC01562.jpg";
+const ogImage = "/og-image.jpg";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: invitationTitle,
   description: invitationDescription,
+  alternates: {
+    canonical: siteUrl
+  },
   openGraph: {
     title: invitationTitle,
     description: invitationDescription,
@@ -19,8 +22,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: ogImage,
-        width: 3195,
-        height: 4793,
+        width: 1200,
+        height: 630,
         alt: "Foto sampul undangan pernikahan Hamid dan Anggi"
       }
     ],
