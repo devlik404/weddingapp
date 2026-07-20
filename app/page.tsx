@@ -714,7 +714,7 @@ function BrideGroomSection() {
         </h2>
         <LuxuryDivider tone="blue" />
         <p data-reveal="up" className="relative z-10 mx-auto mt-4 max-w-[20rem] font-display text-lg italic leading-7 text-[#1f2730]/82">
-          Assalamualaikum Wr. Wb. Dengan memohon Rahmat & Ridho Allah SWT SWT, kami
+          Assalamualaikum Wr. Wb. Dengan memohon Rahmat & Ridho Allah SWT, kami
           bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri acara
           pernikahan Muhamad Hamidudin dan Anggi Lusiana kami:
         </p>
